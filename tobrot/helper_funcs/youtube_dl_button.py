@@ -24,7 +24,6 @@ from tobrot import (
 import pyrogram
 logging.getLogger("pyrogram").setLevel(logging.WARNING)
 
-from tobrot.helper_funcs.extract_link_from_message import extract_link
 from tobrot.helper_funcs.upload_to_tg import upload_to_tg
 
 
@@ -84,25 +83,8 @@ async def youtube_dl_call_back(bot, update):
     # https://superuser.com/a/994060
     LOGGER.info(custom_file_name)
     #
-    if "noyes.in" in youtube_dl_url or "tor.checker.in" in youtube_dl_url:
-        await bot.edit_message_text(
-            chat_id=update.message.chat.id,
-            text="😡😡 <i>please do not abuse this <u>FREE</u> service</i> 🌚",
-            message_id=update.message.message_id
-        )
-        return
-    if "drive.google.com" in youtube_dl_url and youtube_dl_format != "source":
-        await bot.edit_message_text(
-            chat_id=update.message.chat.id,
-            text="<i>please do not abuse this <u>FREE</u> service</i>",
-            message_id=update.message.message_id
-        )
-        return
-    #
-    await bot.edit_message_text(
-        text="trying to download",
-        chat_id=update.message.chat.id,
-        message_id=update.message.message_id
+    await update.message.edit_caption(
+        caption="trying to download"
     )
     description = "@PublicLeech"
     if "fulltitle" in response_json:
@@ -176,10 +158,8 @@ async def youtube_dl_call_back(bot, update):
     ad_string_to_replace = "please report this issue on https://yt-dl.org/bug . Make sure you are using the latest version; see  https://yt-dl.org/update  on how to update. Be sure to call youtube-dl with the --verbose flag and include its complete output."
     if e_response and ad_string_to_replace in e_response:
         error_message = e_response.replace(ad_string_to_replace, "")
-        await bot.edit_message_text(
-            chat_id=update.message.chat.id,
-            message_id=update.message.message_id,
-            text=error_message
+        await update.message.edit_caption(
+            caption=error_message
         )
         return False, None
     if t_response:
@@ -189,10 +169,8 @@ async def youtube_dl_call_back(bot, update):
         time_taken_for_download = (end_one -start).seconds
         dir_contents = len(os.listdir(tmp_directory_for_each_user))
         # dir_contents.sort()
-        await bot.edit_message_text(
-            chat_id=update.message.chat.id,
-            message_id=update.message.message_id,
-            text=f"found {dir_contents} files"
+        await update.message.edit_caption(
+            caption=f"found {dir_contents} files"
         )
         user_id = update.from_user.id
         #
@@ -200,7 +178,8 @@ async def youtube_dl_call_back(bot, update):
             update.message,
             tmp_directory_for_each_user,
             user_id,
-            {}
+            {},
+            True
         )
         LOGGER.info(final_response)
         #
@@ -209,26 +188,3 @@ async def youtube_dl_call_back(bot, update):
         except:
             pass
         #
-        message_to_send = ""
-        for key_f_res_se in final_response:
-            local_file_name = key_f_res_se
-            message_id = final_response[key_f_res_se]
-            channel_id = str(AUTH_CHANNEL)[4:]
-            private_link = f"https://t.me/c/{channel_id}/{message_id}"
-            message_to_send += "👉 <a href='"
-            message_to_send += private_link
-            message_to_send += "'>"
-            message_to_send += local_file_name
-            message_to_send += "</a>"
-            message_to_send += "\n"
-        if message_to_send != "":
-            mention_req_user = f"<a href='tg://user?id={user_id}'>Your Requested Files</a>\n\n"
-            message_to_send = mention_req_user + message_to_send
-            message_to_send = message_to_send + "\n\n" + "#uploads"
-        else:
-            message_to_send = "<i>FAILED</i> to upload files. 😞😞"
-        await update.message.reply_to_message.reply_text(
-            text=message_to_send,
-            quote=True,
-            disable_web_page_preview=True
-        )

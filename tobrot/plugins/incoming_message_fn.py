@@ -35,7 +35,7 @@ async def incoming_message_f(client, message):
         if message.command[1] == "archive":
             is_zip = True
     # get link from the incoming message
-    dl_url, cf_name = extract_link(message.reply_to_message)
+    dl_url, cf_name = await extract_link(message.reply_to_message, "LEECH")
     LOGGER.info(dl_url)
     LOGGER.info(cf_name)
     if dl_url is not None:
@@ -66,7 +66,10 @@ async def incoming_message_f(client, message):
             # if FAILED, display the error message
             await i_m_sefg.edit_text(err_message)
     else:
-        await i_m_sefg.edit_text("**FCUK**! wat have you entered. Please read /help")
+        await i_m_sefg.edit_text(
+            "**FCUK**! wat have you entered. \nPlease read /help \n"
+            f"<b>API Error</b>: {cf_name}"
+        )
 
 
 async def incoming_youtube_dl_f(client, message):
@@ -74,7 +77,7 @@ async def incoming_youtube_dl_f(client, message):
     i_m_sefg = await message.reply_text("processing", quote=True)
     # LOGGER.info(message)
     # extract link from message
-    dl_url, cf_name = extract_link(message.reply_to_message)
+    dl_url, cf_name = await extract_link(message.reply_to_message, "YTDL")
     LOGGER.info(dl_url)
     LOGGER.info(cf_name)
     if dl_url is not None:
@@ -86,14 +89,25 @@ async def incoming_youtube_dl_f(client, message):
         if not os.path.isdir(user_working_dir):
             os.makedirs(user_working_dir)
         # list the formats, and display in button markup formats
-        text_message, reply_markup = await extract_youtube_dl_formats(
+        thumb_image, text_message, reply_markup = await extract_youtube_dl_formats(
             dl_url,
             user_working_dir
         )
-        await i_m_sefg.edit_text(
-            text=text_message,
-            reply_markup=reply_markup
-        )
+        if thumb_image is not None:
+            await message.reply_photo(
+                photo=thumb_image,
+                quote=True,
+                caption=text_message,
+                reply_markup=reply_markup
+            )
+            await i_m_sefg.delete()
+        else:
+            await i_m_sefg.edit_text(
+                text=text_message,
+                reply_markup=reply_markup
+            )
     else:
-        # if no links found, delete the "processing" message
-        await i_m_sefg.delete()
+        await i_m_sefg.edit_text(
+            "**FCUK**! wat have you entered. \nPlease read /help \n"
+            f"<b>API Error</b>: {cf_name}"
+        )
