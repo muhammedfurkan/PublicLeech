@@ -7,13 +7,13 @@ class Config(object):
     APP_ID = int(os.environ.get("APP_ID", 12345))
     API_HASH = os.environ.get("API_HASH")
     # Get these values from my.telegram.org
-    # to store the channel ID who are authorized to use the bot
-    AUTH_CHANNEL = int(os.environ.get("AUTH_CHANNEL", -100))
+    # array to store the channel ID who are authorized to use the bot
+    AUTH_CHANNEL = set(int(x) for x in os.environ.get("AUTH_CHANNEL", "").split())
     # the download location, where the HTTP Server runs
     DOWNLOAD_LOCATION = "./DOWNLOADS"
     # Telegram maximum file upload size
     MAX_FILE_SIZE = 50000000
-    TG_MAX_FILE_SIZE = 1572864000
+    TG_MAX_FILE_SIZE = 2097152000
     FREE_USER_MAX_FILE_SIZE = 50000000
     # chunk size that should be used with requests
     CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE", 128))
@@ -33,4 +33,5 @@ class Config(object):
     UN_FINISHED_PROGRESS_STR = os.environ.get("UN_FINISHED_PROGRESS_STR", "░")
     # add offensive API
     TG_OFFENSIVE_API = os.environ.get("TG_OFFENSIVE_API", None)
-
+    # URL for the rclone configuration
+    R_CLONE_CONF_URI = os.environ.get("R_CLONE_CONF_URI", None)
